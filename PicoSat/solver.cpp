@@ -10,7 +10,7 @@ solver::solver(const std::vector<std::vector<int>>& input_clauses)
     result_.num_variables = 0;
     for (const auto& clause : input_clauses)
     {
-        for (int lit : clause)
+        for (const int lit : clause)
         {
             result_.num_variables = std::max(static_cast<int>(result_.num_variables), std::abs(lit));
         }

@@ -26,7 +26,7 @@ public:
 private:
     void atomic_cut(int variable, const std::vector<std::vector<int>>& clause_set);
     bool unit_propagation(std::vector<std::vector<int>>& clauses);
-    int find_most_frequent_variable(const std::vector<std::vector<int>>& clause_set) const;
+    [[nodiscard]] int find_most_frequent_variable(const std::vector<std::vector<int>>& clause_set) const;
 
     result result_;
     std::vector<std::vector<int>> input_clauses_;
