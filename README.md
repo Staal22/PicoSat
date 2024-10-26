@@ -1,6 +1,6 @@
 # PicoSat
 
-PicoSat is a learning project to familiarize myself with SAT solving algorithm like DPLL and brush up on my C++. It is a relatively lightweight solver that only uses atomic cut and unit propagation.
+PicoSat is a learning project to familiarize myself with SAT solving and algorithms like DPLL, also to brush up on my C++. It is a relatively lightweight solver that only uses atomic cut and unit propagation.
 
 On my shitty Ryzen 5 2600 it can solve clause sets with a little over 100,000 clauses before timing out (taking longer than 30s).
 
@@ -12,8 +12,6 @@ Name inspired my [MiniSat](http://minisat.se/)
 
 - Generalize:
   Right now the program just runs some tests to confirm that it's working, and then benchmarks itself on larger and larger unsatisfiable clauses (that contain every possible permutation of *n* propositional variables, so $2^n$ clauses). It does this until a solve takes more than 30 secods, at which point it times out. If this was to actually be a useful program it should probably launch some kind of interface and allow for processing specific clause sets. Alas...
-  
-  
 
 ## Code style
 
