@@ -18,3 +18,7 @@ Name inspired my [MiniSat](http://minisat.se/)
 Allman/BSD style braces.
 
 ~~K&R was invented to save paper and people only use it to make their code unreadable because they are  menaces to society (or because it's what they're used to, but it's still objectively less readable).~~
+
+## Notes
+
+Uses C++ 17.
