@@ -2,7 +2,7 @@
 #include <chrono>
 #include <iostream>
 
-static constexpr int timeout_secs = 30;
+inline constexpr int timeout_secs = 30;
 
 solver::solver(const std::vector<std::vector<int>>& input_clauses)
 {
@@ -46,8 +46,16 @@ result solver::solve()
         /* Heuristic: the variable that appears the most times in the subset of clauses
          * that all have length equal to the length of the shortest clause
          */
-        const int best_variable = find_most_frequent_variable(simplified_clauses);
-        atomic_cut(best_variable, simplified_clauses);
+        if (auto best_var = find_most_frequent_variable(simplified_clauses))
+        {
+            atomic_cut(*best_var, simplified_clauses); // Dereference optional
+        }
+        else
+        {
+            // Handle edge case - no variable found
+            result_.satisfiable = false;
+            return result_;
+        }
     }
 
     // Update timing
@@ -122,11 +130,13 @@ void solver::atomic_cut(const int variable, const std::vector<std::vector<int>>&
             }
 
             // Continue with atomic cuts
-            int next_var = find_most_frequent_variable(pos_clauses);
-            atomic_cut(next_var, pos_clauses);
-            if (result_.satisfiable)
+            if (auto next_var = find_most_frequent_variable(pos_clauses))
             {
-                return;
+                atomic_cut(*next_var, pos_clauses);
+                if (result_.satisfiable)
+                {
+                    return;
+                }
             }
         }
     }
@@ -178,8 +188,10 @@ void solver::atomic_cut(const int variable, const std::vector<std::vector<int>>&
             }
 
             // Continue with atomic cuts
-            int next_var = find_most_frequent_variable(neg_clauses);
-            atomic_cut(next_var, neg_clauses);
+            if (auto next_var = find_most_frequent_variable(neg_clauses))
+            {
+                atomic_cut(*next_var, neg_clauses);
+            }
         }
         else
         {
@@ -249,14 +261,33 @@ bool solver::unit_propagation(std::vector<std::vector<int>>& clauses)
     return true;
 }
 
-int solver::find_most_frequent_variable(const std::vector<std::vector<int>>& clause_set) const
+// In solver.cpp
+std::optional<int> solver::find_most_frequent_variable(
+    const std::vector<std::vector<int>>& clause_set) const
 {
-    std::vector<std::vector<int>> shortest_clauses;
-    size_t shortest_length = std::numeric_limits<int>::max();
+    // Guard against edge cases
+    if (clause_set.empty())
+    {
+        return std::nullopt; // No clauses, no variable to pick
+    }
+
+    // Find shortest clause length
+    size_t shortest_length = std::numeric_limits<size_t>::max();
     for (const auto& clause : clause_set)
     {
-        shortest_length = std::min(shortest_length, clause.size());
+        if (!clause.empty())
+        {
+            shortest_length = std::min(shortest_length, clause.size());
+        }
     }
+
+    // If all clauses are empty, can't pick a variable
+    if (shortest_length == std::numeric_limits<size_t>::max())
+    {
+        return std::nullopt;
+    }
+
+    std::vector<std::vector<int>> shortest_clauses;
     for (const auto& clause : clause_set)
     {
         if (clause.size() == shortest_length)
@@ -265,7 +296,7 @@ int solver::find_most_frequent_variable(const std::vector<std::vector<int>>& cla
         }
     }
 
-    std::vector frequencies(result_.num_variables, 0);
+    std::vector<int> frequencies(result_.num_variables, 0);
     for (const auto& clause : shortest_clauses)
     {
         for (const int lit : clause)
@@ -275,6 +306,13 @@ int solver::find_most_frequent_variable(const std::vector<std::vector<int>>& cla
     }
 
     const auto it = std::max_element(frequencies.begin(), frequencies.end());
+
+    // Check if we actually found a variable with non-zero frequency
+    if (it == frequencies.end() || *it == 0)
+    {
+        return std::nullopt;
+    }
+
     const auto most_frequent_index = std::distance(frequencies.begin(), it);
     return static_cast<int>(most_frequent_index + 1);
 }
