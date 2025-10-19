@@ -14,7 +14,7 @@ const std::vector<std::vector<int>>& clause_set_generator::generate_clause_set(c
     std::vector<std::vector<int>> clauses;
 
     // Pre-allocate space
-    clauses.reserve(1 << num_literals);
+    clauses.reserve(1ULL << num_literals);
 
     const int num_possible_clauses = 1 << num_literals;
     std::vector<int> clause;
